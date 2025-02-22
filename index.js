@@ -26,6 +26,7 @@ async function run() {
     await client.connect();
 
     const userCollection = client.db("realEstateDB").collection("users");
+    const propertyCollection = client.db("realEstateDB").collection("allProperties");
 
     // all users related api
 
@@ -42,7 +43,15 @@ async function run() {
 
     app.get("/users",  async (req, res) => {
       const result = await userCollection.find().toArray();
-      console.log(result);
+      // console.log(result);
+      res.send(result);
+    });
+
+    // get all products 
+
+    app.get("/allproperties",  async (req, res) => {
+      const result = await propertyCollection.find().toArray();
+      console.log(result, "this is result");
       res.send(result);
     });
 
@@ -54,6 +63,12 @@ async function run() {
         const result = await userCollection.findOne({ email })
         res.send({role: result?.role})
     })
+
+    app.get("/users",  async (req, res) => {
+      const result = await userCollection.find().toArray();
+      console.log(result);
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
