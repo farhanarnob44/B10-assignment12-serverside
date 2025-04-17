@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // middleware
 app.use(cors());
@@ -26,8 +26,12 @@ async function run() {
     await client.connect();
 
     const userCollection = client.db("realEstateDB").collection("users");
-    const propertyCollection = client.db("realEstateDB").collection("allProperties");
+    const wishListCollection = client.db("realEstateDB").collection("wishlist");
+    const propertyCollection = client
+      .db("realEstateDB")
+      .collection("allProperties");
 
+    // console.log(wishListCollection);
     // all users related api
 
     app.post("/users", async (req, res) => {
@@ -41,35 +45,116 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/users",  async (req, res) => {
+    app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       // console.log(result);
       res.send(result);
     });
 
-    // get all products 
+    // find one user
 
-    app.get("/allproperties",  async (req, res) => {
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const quer = { _id: new ObjectId(id) };
+      const result = await userCollection.findOne(quer);
+      res.send(result);
+    });
+
+
+    // delete user 
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+
+    
+
+
+    // get all products
+
+    app.get("/allproperties", async (req, res) => {
       const result = await propertyCollection.find().toArray();
-      console.log(result, "this is result");
       res.send(result);
     });
 
+    // find one product
 
-    // get user role 
+    app.get("/allproperties/:id", async (req, res) => {
+      const id = req.params.id;
+      const quer = { _id: new ObjectId(id) };
+      const result = await propertyCollection.findOne(quer);
+      res.send(result);
+    });
 
-    app.get('/users/role/:email', async (req,res) => {
-        const email = req.params.email;
-        const result = await userCollection.findOne({ email })
-        res.send({role: result?.role})
-    })
+    // add to wishlist
 
-    app.get("/users",  async (req, res) => {
+    app.post("/wishlist", async (req, res) => {
+      const queryData = req.body;
+      const result = await wishListCollection.insertOne(queryData);
+      console.log(queryData);
+      res.send({ wishedData: queryData, insertResult: result });
+      // res.send(result);
+    });
+
+    app.get("/wishlist", async (req, res) => {
+      const result = await wishListCollection.find().toArray();
+      // console.log(result);
+      res.send(result);
+    });
+
+    // app.post("/wishlist", async(req, res)=> {
+    //   const newEquipment = req.body;
+    //   console.log('Creating new equipment',newEquipment);
+    //   const result = await wishListCollection.insertOne(newEquipment);
+    //   res.send(result);
+    // })
+
+    // app.get("/allproperties/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const quer = { _id: new ObjectId (id) };
+    //   const result = await propertyCollection.findOne(quer);
+    //   res.send(result);
+    // });
+
+    // app.get("/allproperties/:id", async (req, res) => {
+    //   // const result = await propertyCollection.find().toArray();
+    //   const result = await propertyCollection.findOne({ _id });
+    //   // console.log(result, "this is result");
+    //   res.send(result);
+    // });
+
+    // app.get("/allproperties/:_id", async (req, res) => {
+    //   const result = await propertyCollection.find().toArray();
+    //   console.log(result, "this is result");
+    //   res.send(result);
+    // });
+
+    // delete properties
+
+    app.delete("/allproperties/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await propertyCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // get user role
+
+    app.get("/users/role/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email });
+      res.send({ role: result?.role });
+    });
+
+    app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
-
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
