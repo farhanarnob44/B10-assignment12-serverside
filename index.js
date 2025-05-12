@@ -299,7 +299,7 @@ async function run() {
 
         if (validObjectIds.length > 0) {
           const query = { _id: { $in: validObjectIds } };
-          const deleteResult = await wishListCollection.deleteMany(query);
+          const deleteResult = await wishListCollection.deleteOne(query);
           console.log(
             `Deleted ${deleteResult.deletedCount} items from wishlist`
           );
